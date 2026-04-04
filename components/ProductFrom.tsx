@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +16,7 @@ import { Product } from "../data/products";
 import { useToast } from "@/context/ToastsContext";
 import { useRouter } from "next/navigation";
 
-export default function ProductForm() {
+export default function ProductForm({ productId }: { productId?: number }) {
   const router = useRouter();
   const { showToast } = useToast();
   
@@ -30,6 +30,23 @@ export default function ProductForm() {
     description: "",
     image: "",
   });
+
+  // Hydrate Data on Edit
+  useEffect(() => {
+    if (productId && products.length > 0) {
+      const existingProduct = products.find(p => p.id === productId);
+      if (existingProduct) {
+        setFormData({
+          name: existingProduct.name,
+          category: existingProduct.category,
+          price: existingProduct.price.toString(),
+          salePrice: existingProduct.salePrice.toString(),
+          description: existingProduct.description,
+          image: existingProduct.image,
+        });
+      }
+    }
+  }, [productId, products]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,7 +65,7 @@ export default function ProductForm() {
     if (!formData.name || !formData.price || !formData.category) return;
 
     const newProduct: Product = {
-      id: Date.now(),
+      id: productId || Date.now(),
       name: formData.name,
       category: formData.category,
       price: parseFloat(formData.price),
@@ -57,8 +74,13 @@ export default function ProductForm() {
       image: formData.image || "https://placehold.co/400x400?text=Product",
     };
 
-    setProducts((prev: Product[]) => [newProduct, ...prev]);
-    showToast("Product successfully added!", "success");
+    setProducts((prev: Product[]) => {
+      if (productId) {
+        return prev.map(p => p.id === productId ? newProduct : p);
+      }
+      return [newProduct, ...prev];
+    });
+    showToast(`Product successfully ${productId ? 'updated' : 'added'}!`, "success");
     router.push("/");
   };
 
@@ -66,7 +88,7 @@ export default function ProductForm() {
     <div className="max-w-xl mx-auto rounded-xl border border-[#e2e8f0] dark:border-[#1e293b] bg-white dark:bg-[#0f172a] shadow-sm overflow-hidden">
       <div className="border-b border-[#e2e8f0] dark:border-[#1e293b] px-6 py-4">
         <h2 className="text-[22px] font-bold text-[#334155] dark:text-[#f8fafc]">
-          Add Product
+          {productId ? "Edit Product" : "Add Product"}
         </h2>
       </div>
 
@@ -167,7 +189,7 @@ export default function ProductForm() {
           className="w-full bg-[#108970] hover:bg-[#0c6b57] text-white font-medium text-base py-6 shadow-sm rounded-lg"
           onClick={handleSave}
         >
-          Save Product
+          {productId ? "Save Changes" : "Save Product"}
         </Button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -223,14 +224,16 @@ const ProductTable = () => {
 
                   <td className="px-4 py-4 align-middle" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
-                      <Button
-                        id={`edit-product-${product.id}`}
-                        variant="outline"
-                        size="sm"
-                        className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950 dark:hover:text-blue-300"
-                      >
-                        Edit
-                      </Button>
+                      <Link href={`/edit/${product.id}`}>
+                        <Button
+                          id={`edit-product-${product.id}`}
+                          variant="outline"
+                          size="sm"
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950 dark:hover:text-blue-300"
+                        >
+                          Edit
+                        </Button>
+                      </Link>
                       <Button
                         id={`delete-product-${product.id}`}
                         variant="outline"

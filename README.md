@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Product Management Dashboard
 
-## Getting Started
+A modern, highly responsive Product Management Dashboard built for the Full Stack Intern Assessment. 
+This application allows users to seamlessly add, view, edit, and delete products entirely within the browser securely using Local Storage.
 
-First, run the development server:
+## 🚀 Tech Stack Used
+- **Framework:** Next.js 15 (App Router, React 19)
+- **Styling:** Tailwind CSS v4
+- **Components:** Shadcn/UI (Radix UI primitives)
+- **Icons:** Lucide React
+- **State Management:** Custom React Hooks (`useLocalStorage`)
+- **Routing:** Next.js Dynamic App Routing
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📦 Run Locally
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Start the Development Server**
+   ```bash
+   npm run dev
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **View Application**
+   Open your browser and navigate to `http://localhost:3000`.
 
-## Learn More
+## ✨ Features Implemented
+- **Full CRUD Support:** Add, View, Edit, and Delete elements flawlessly.
+- **Local Storage Persistence:** Custom hydration hooks prevent SSR mismatches while storing image Base64 buffers and data arrays natively without a backend.
+- **Client-Side Image Uploads:** Converts raw uploaded files natively into Base64 blob strings directly using the browser's `FileReader` API.
+- **Dynamic Filtering:** Search by name, or filter seamlessly by Category and Price Bracket.
+- **Responsive Theme:** Clean light and dark modes securely tracked via `next-themes`.
+- **Global Toast System:** Custom animated Toast context provider to display non-intrusive success/error confirmation popups natively.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 💡 Assumptions & Future Improvements
+- **Backend Setup:** Assuming a zero-backend environment per assessment restrictions, Images are stored locally as Base64 strings. Large Base64 encodings can technically max out the 5MB browser Local Storage limit faster than plain text. A real-world improvement would involve a backend AWS S3 file uploader mechanism.
+- **Pagination Strategy:** Data is paginated actively on the client side since the entire database loads at once. In a full-stack iteration, offset/limit pagination would be offloaded directly into SQL queries to preserve bandwidth.
