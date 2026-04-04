@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/pagination";
 import { Search, Mic, SlidersHorizontal, LayoutList } from "lucide-react";
 import { Product, initialProducts } from "@/data/products";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useToast } from "@/context/ToastsContext";
 
 const priceRanges = [
   { label: "All Prices", min: 0, max: Infinity },
@@ -39,7 +41,8 @@ const priceRanges = [
 ];
 
 const ProductTable = () => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const { showToast } = useToast();
+  const [products, setProducts] = useLocalStorage<Product[]>("product-data-store-v2", initialProducts);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
   const [productDetails, setProductDetails] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -90,6 +93,7 @@ const ProductTable = () => {
   const confirmDelete = () => {
     if (productToDelete === null) return;
     setProducts((prev) => prev.filter((p) => p.id !== productToDelete));
+    showToast("Product deleted successfully!");
     setProductToDelete(null);
   };
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ToastsProvider } from "@/context/ToastsContext";
 import Navbar from "@/components/Navbar";
 
 const roboto = Roboto({
@@ -38,8 +39,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
-          <main className="flex-1">{children}</main>
+          <ToastsProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+          </ToastsProvider>
         </ThemeProvider>
       </body>
     </html>

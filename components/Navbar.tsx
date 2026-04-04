@@ -19,6 +19,7 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/">
         <div className="flex items-center gap-3.5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
             <svg
@@ -38,9 +39,10 @@ export default function Navbar() {
             </svg>
           </div>
           <h1 className="text-[22px] font-black tracking-tight text-slate-900 dark:text-white">
-            Product <span className="font-semibold text-emerald-600 dark:text-emerald-400">Dashboard</span>
+            Product <span className="font-semibold text-emerald-600 dark:text-emerald-400">Management</span>
           </h1>
         </div>
+        </Link>
         <div className="flex items-center gap-4">
           <Link href="/add">
             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-semibold rounded-lg px-3 sm:px-4">
