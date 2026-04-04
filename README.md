@@ -24,7 +24,7 @@ This application allows users to seamlessly add, view, edit, and delete products
    npm install
    ```
 
-2. **Start the Development Server**
+3. **Start the Development Server**
    ```bash
    npm run dev
    ```
@@ -37,6 +37,7 @@ This application allows users to seamlessly add, view, edit, and delete products
 - **Local Storage Persistence:** Custom hydration hooks prevent SSR mismatches while storing image Base64 buffers and data arrays natively without a backend.
 - **Client-Side Image Uploads:** Converts raw uploaded files natively into Base64 blob strings directly using the browser's `FileReader` API.
 - **Dynamic Filtering:** Search by name, or filter seamlessly by Category and Price Bracket.
+- **Client-Side Pagination:** Products are paginated 8 per page using React `useMemo`. Page resets automatically when filters change, keeping navigation always consistent.
 - **Responsive Theme:** Clean light and dark modes securely tracked via `next-themes`.
 - **Global Toast System:** Custom animated Toast context provider to display non-intrusive success/error confirmation popups natively.
 
