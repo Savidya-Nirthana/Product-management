@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -11,43 +10,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Search, Mic, SlidersHorizontal, LayoutList } from "lucide-react";
-
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  salePrice: number;
-  image: string;
-}
-
-const initialProducts: Product[] = [
-  {
-    id: 1,
-    name: "Wireless Headphones",
-    category: "Electronics",
-    price: 99.99,
-    salePrice: 19.99,
-    image: "/products/headphones.png",
-  },
-  {
-    id: 2,
-    name: "Coffee Maker",
-    category: "Appliances",
-    price: 49.99,
-    salePrice: 29.99,
-    image: "/products/coffee-maker.png",
-  },
-  {
-    id: 3,
-    name: "Smartphone",
-    category: "Electronics",
-    price: 699.99,
-    salePrice: 49.99,
-    image: "/products/smartphone.png",
-  },
-];
+import { Product, initialProducts } from "@/data/products";
 
 const priceRanges = [
   { label: "All Prices", min: 0, max: Infinity },
@@ -59,10 +40,18 @@ const priceRanges = [
 
 const ProductTable = () => {
   const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [productToDelete, setProductToDelete] = useState<number | null>(null);
+  const [productDetails, setProductDetails] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [priceFilter, setPriceFilter] = useState(0);
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, priceFilter, categoryFilter]);
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(products.map((p) => p.category)));
@@ -83,25 +72,25 @@ const ProductTable = () => {
     });
   }, [products, searchQuery, priceFilter, categoryFilter]);
 
-  const toggleSelect = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const currentProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const getVisiblePages = (current: number, total: number) => {
+    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, "ellipsis", total];
+    if (current >= total - 2) return [1, "ellipsis", total - 3, total - 2, total - 1, total];
+    return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
   };
 
-  const handleDelete = (id: number) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
+  const visiblePages = getVisiblePages(currentPage, totalPages);
+
+  const confirmDelete = () => {
+    if (productToDelete === null) return;
+    setProducts((prev) => prev.filter((p) => p.id !== productToDelete));
+    setProductToDelete(null);
   };
 
   return (
@@ -126,8 +115,8 @@ const ProductTable = () => {
             <Mic className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors z-10" />
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="relative w-[180px]">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+            <div className="relative w-full sm:w-[180px]">
               <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10 pointer-events-none" />
               <Select value={String(priceFilter)} onValueChange={(val) => setPriceFilter(Number(val))}>
                 <SelectTrigger className="w-full rounded-lg bg-muted/50 pl-9 font-medium">
@@ -143,7 +132,7 @@ const ProductTable = () => {
               </Select>
             </div>
 
-            <div className="relative w-[180px]">
+            <div className="relative w-full sm:w-[180px]">
               <LayoutList className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10 pointer-events-none" />
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full rounded-lg bg-muted/50 pl-9 font-medium">
@@ -165,7 +154,6 @@ const ProductTable = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="w-10 px-4 py-3" />
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                   Image
                 </th>
@@ -181,26 +169,18 @@ const ProductTable = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product, index) => (
+              {currentProducts.map((product, index) => (
                 <tr
                   key={product.id}
-                  className={`group transition-colors hover:bg-muted/50 ${
-                    index !== filteredProducts.length - 1
+                  onClick={() => setProductDetails(product)}
+                  className={`group transition-colors hover:bg-muted/50 cursor-pointer ${
+                    index !== currentProducts.length - 1
                       ? "border-b border-border"
                       : ""
                   }`}
                 >
-                  <td className="px-4 py-4">
-                    <Checkbox
-                      id={`select-product-${product.id}`}
-                      checked={selectedIds.has(product.id)}
-                      onCheckedChange={() => toggleSelect(product.id)}
-                      className="h-4 w-4"
-                    />
-                  </td>
-
-                  <td className="px-4 py-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted/60">
+                  <td className="px-4 py-4 align-middle">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted/60 min-w-14">
                       <img
                         src={product.image}
                         alt={product.name}
@@ -220,13 +200,13 @@ const ProductTable = () => {
                   </td>
 
 
-                  <td className="px-4 py-4">
+                  <td className="px-4 py-4 align-middle">
                     <span className="text-sm font-medium text-foreground">
                       {product.name}
                     </span>
                   </td>
 
-                  <td className="px-4 py-4">
+                  <td className="px-4 py-4 align-middle">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-foreground">
                         ${product.price.toFixed(2)}
@@ -237,7 +217,7 @@ const ProductTable = () => {
                     </div>
                   </td>
 
-                  <td className="px-4 py-4">
+                  <td className="px-4 py-4 align-middle" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
                       <Button
                         id={`edit-product-${product.id}`}
@@ -251,7 +231,7 @@ const ProductTable = () => {
                         id={`delete-product-${product.id}`}
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(product.id)}
+                        onClick={() => setProductToDelete(product.id)}
                         className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:border-rose-800 dark:hover:bg-rose-950 dark:hover:text-rose-300"
                       >
                         Delete
@@ -261,7 +241,7 @@ const ProductTable = () => {
                 </tr>
               ))}
 
-              {filteredProducts.length === 0 && (
+              {currentProducts.length === 0 && (
                 <tr>
                   <td
                     colSpan={5}
@@ -274,7 +254,138 @@ const ProductTable = () => {
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div className="border-t border-border px-6 py-4">
+            <Pagination>
+              <PaginationContent>
+                {currentPage > 1 && (
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage((prev) => Math.max(prev - 1, 1));
+                      }}
+                    />
+                  </PaginationItem>
+                )}
+                {visiblePages.map((page, i) => (
+                  <PaginationItem key={i}>
+                    {page === "ellipsis" ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        isActive={currentPage === page}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(page as number);
+                        }}
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+                {currentPage < totalPages && (
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+                      }}
+                    />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
+
+      <Dialog open={productToDelete !== null} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-[#242933] border-slate-200 dark:border-[#313745] p-0 overflow-hidden gap-0 text-slate-900 dark:text-slate-200">
+          <DialogHeader className="p-5 pb-4">
+            <DialogTitle className="text-xl font-bold tracking-wide text-slate-900 dark:text-white">Delete Product</DialogTitle>
+          </DialogHeader>
+          <div className="border-y border-slate-200 dark:border-[#313745] p-5 bg-slate-50 dark:bg-[#242933]">
+            <p className="text-[15px] font-medium text-slate-600 dark:text-slate-300">
+              Are you sure you want to delete this product?
+            </p>
+          </div>
+          <DialogFooter className="p-4 pb-8 px-8 bg-slate-50 dark:bg-[#242933] flex sm:justify-end gap-2">
+            <Button
+              variant="destructive"
+              className="bg-red-500 hover:bg-red-600 dark:bg-[#eb5055] dark:hover:bg-[#d4484d] text-white px-5 font-semibold"
+              onClick={confirmDelete}
+            >
+              Delete
+            </Button>
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                className="bg-white hover:bg-slate-100 dark:bg-[#3b4352] dark:hover:bg-[#313745] border-slate-300 dark:border-transparent text-slate-700 dark:text-white dark:hover:text-white px-5 font-semibold"
+              >
+                Cancel
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={productDetails !== null} onOpenChange={(open) => !open && setProductDetails(null)}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Product Details</DialogTitle>
+          </DialogHeader>
+          {productDetails && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 py-4">
+              <div className="flex items-center justify-center bg-muted/60 rounded-xl p-4 sm:col-span-1 border border-border">
+                <img
+                  src={productDetails.image}
+                  alt={productDetails.name}
+                  className="object-contain w-32 h-32"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                    if (target.parentElement) {
+                      target.parentElement.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
+                        </svg>`;
+                    }
+                  }}
+                />
+              </div>
+              <div className="sm:col-span-2 space-y-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground">{productDetails.name}</h3>
+                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{productDetails.category}</p>
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                      ${productDetails.salePrice.toFixed(2)}
+                    </span>
+                    <span className="text-sm text-muted-foreground line-through">
+                      ${productDetails.price.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-1">Description</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {productDetails.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="sm:justify-end">
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
