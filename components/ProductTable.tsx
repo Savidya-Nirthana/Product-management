@@ -43,7 +43,7 @@ const priceRanges = [
 
 const ProductTable = () => {
   const { showToast } = useToast();
-  const [products, setProducts] = useLocalStorage<Product[]>("product-data-store-v2", initialProducts);
+  const [products, setProducts] = useLocalStorage<Product[]>("product-data-store-v4", initialProducts);
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
   const [productDetails, setProductDetails] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState("");

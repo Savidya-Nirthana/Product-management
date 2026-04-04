@@ -20,7 +20,7 @@ export default function ProductForm({ productId }: { productId?: number }) {
   const router = useRouter();
   const { showToast } = useToast();
   
-  const [products, setProducts] = useLocalStorage<Product[]>("product-data-store-v2", []);
+  const [products, setProducts] = useLocalStorage<Product[]>("product-data-store-v4", []);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -31,7 +31,6 @@ export default function ProductForm({ productId }: { productId?: number }) {
     image: "",
   });
 
-  // Hydrate Data on Edit
   useEffect(() => {
     if (productId && products.length > 0) {
       const existingProduct = products.find(p => p.id === productId);
